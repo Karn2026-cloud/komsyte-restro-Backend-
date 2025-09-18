@@ -16,7 +16,8 @@ const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) { fs.mkdirSync(uploadsDir); }
 app.use('/uploads', express.static(uploadsDir));
 
-app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'], credentials: true }));
+app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173','https://komsyte-restro-frontend.onrender.com',
+],methods: "GET,POST,PUT,DELETE",credentials: true }));
 
 // ---------------- MongoDB Connection ----------------
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/komsyte')
@@ -582,4 +583,5 @@ app.get('/api/reports/dashboard', auth, checkRole(managementRoles), async (req, 
 
 // ---------------- Server Listen ----------------
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
