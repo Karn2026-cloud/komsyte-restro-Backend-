@@ -115,37 +115,42 @@ const checkRole = (allowedRoles) => (req, res, next) => {
 app.post('/api/signup', async (req, res) => {
     try {
         const { shopName, email, password } = req.body;
-        if (!shopName || !email || !password) return res.status(400).json({ error: 'Please provide all required fields.' });
-        if (await Worker.findOne({ email })) return res.status(400).json({ error: 'Email already in use.' });
 
-        // ✅ THE FIX: Operations are now sequential to prevent dependency errors.
-        
-        // 1. Create the Shop first, but without the owner ID.
+        if (!shopName || !email || !password) {
+            return res.status(400).json({ error: 'Please provide all required fields.' });
+        }
+
+        if (await Worker.findOne({ email })) {
+            return res.status(400).json({ error: 'Email already in use.' });
+        }
+
+        // 1. Create Shop
         const newShop = new Shop({ shopName });
         await newShop.save();
 
-        // 2. Hash the password.
+        // 2. Hash Password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // 3. Create the Owner, with the correct restaurantId from the saved shop.
+        // 3. Create Worker (Owner)
         const owner = new Worker({
-            name: 'Owner',
+            name: "Owner",
             email,
             password: hashedPassword,
-            role: 'Owner',
+            role: "Owner",
             restaurantId: newShop._id
         });
         await owner.save();
 
-        // 4. Update the shop document with the owner's ID.
+        // 4. Update Shop with owner
         newShop.owner = owner._id;
         await newShop.save();
 
-        res.status(201).json({ message: 'Restaurant and Owner account created successfully!' });
+        res.status(201).json({ message: "Restaurant and Owner account created successfully!" });
+
     } catch (err) {
         console.error("SIGNUP ERROR:", err);
-        res.status(500).json({ error: 'Server error during signup.' });
+        res.status(500).json({ error: "Server error during signup." });
     }
 });
 
@@ -585,3 +590,4 @@ app.get('/api/reports/dashboard', auth, checkRole(managementRoles), async (req, 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
