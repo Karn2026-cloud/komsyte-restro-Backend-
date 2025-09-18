@@ -115,7 +115,6 @@ const checkRole = (allowedRoles) => (req, res, next) => {
 app.post('/api/signup', async (req, res) => {
     try {
         const { shopName, email, password } = req.body;
-
         if (!shopName || !email || !password) {
             return res.status(400).json({ error: 'Please provide all required fields.' });
         }
@@ -124,35 +123,31 @@ app.post('/api/signup', async (req, res) => {
             return res.status(400).json({ error: 'Email already in use.' });
         }
 
-        // 1. Create Shop
         const newShop = new Shop({ shopName });
         await newShop.save();
 
-        // 2. Hash Password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // 3. Create Worker (Owner)
         const owner = new Worker({
-            name: "Owner",
+            name: 'Owner',
             email,
             password: hashedPassword,
-            role: "Owner",
+            role: 'Owner',
             restaurantId: newShop._id
         });
         await owner.save();
 
-        // 4. Update Shop with owner
         newShop.owner = owner._id;
         await newShop.save();
 
-        res.status(201).json({ message: "Restaurant and Owner account created successfully!" });
-
+        res.status(201).json({ message: 'Restaurant and Owner account created successfully!' });
     } catch (err) {
-        console.error("SIGNUP ERROR:", err);
-        res.status(500).json({ error: "Server error during signup." });
+        console.error("SIGNUP ERROR:", err.message); // 👈 Show exact reason
+        res.status(500).json({ error: err.message }); // 👈 Return actual error for debugging
     }
 });
+
 
 app.post('/api/login', async (req, res) => {
     try {
@@ -590,4 +585,5 @@ app.get('/api/reports/dashboard', auth, checkRole(managementRoles), async (req, 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
 
