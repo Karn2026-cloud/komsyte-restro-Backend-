@@ -250,21 +250,21 @@ app.post('/api/login', async (req, res) => {
 
 // ---------------- Public Customer Routes ----------------
 app.get('/api/public/menu', async (req, res) => {
-  try {
-    const { shopId } = req.query;
-    if (!shopId) return res.status(400).json({ error: 'Shop ID is required.' });
+    try {
+        const { shopId } = req.query;
+        if (!shopId) return res.status(400).json({ error: 'Shop ID is required.' });
 
-    const shop = await Shop.findById(shopId);
-    if (!shop) return res.status(404).json({ error: 'Restaurant not found.' });
-
-    const menuItems = await MenuItem.find({ restaurantId: shopId, isAvailable: true });
-    res.json({ menuItems, shopName: shop.shopName });
-  } catch (err) {
-    console.error("Error fetching public menu:", err);
-    res.status(500).json({ error: 'Server error fetching menu.' });
-  }
+        const shop = await Shop.findById(shopId);
+        if (!shop) return res.status(404).json({ error: 'Restaurant not found.' });
+        
+        const menuItems = await MenuItem.find({ restaurantId: shopId, isAvailable: true });
+        
+        res.json({ menuItems, shopName: shop.shopName });
+    } catch (err) {
+        console.error("Error fetching public menu:", err);
+        res.status(500).json({ error: 'Server error fetching menu.' });
+    }
 });
-
 app.post('/api/public/orders', async (req, res) => {
   try {
     const { shopId, items, existingOrderId, orderType } = req.body;
@@ -682,3 +682,4 @@ app.get('/api/reports/dashboard', auth, checkRole(managementRoles), async (req, 
 // ---------------- Server Listen ----------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
